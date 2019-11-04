@@ -11,6 +11,7 @@
   "dependencies": {
     "@fortawesome/fontawesome-free-webfonts": "^1.0.9",
     "antd": "^3.11.2",
+    "codemirror": "^5.49.2",
     "d3": "^5.7.0",
     "dagre-d3-renderer": "^0.5.8",
     "dagre-layout": "^0.8.8",

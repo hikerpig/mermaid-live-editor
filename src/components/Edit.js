@@ -3,6 +3,7 @@ import { Row, Col, Input, Icon, Tag, Affix, Card, Divider } from 'antd'
 import { Route } from 'react-router-dom'
 import { Base64 } from 'js-base64'
 import mermaid from 'mermaid'
+import CodeMirror from 'codemirror'
 
 import Error from './Error'
 import Preview from './Preview'
@@ -17,7 +18,6 @@ if (mermaidVersion[0] === '^') {
 class Edit extends React.Component {
   constructor (props) {
     super(props)
-    this.onCodeChange = this.onCodeChange.bind(this)
     this.onMermaidConfigChange = this.onMermaidConfigChange.bind(this)
 
     const { match: { params: { base64 } }, location: { search } } = this.props
@@ -25,16 +25,11 @@ class Edit extends React.Component {
     mermaid.initialize(this.json.mermaid)
   }
 
-  onCodeChange (event) {
-    const { history, match: { path } } = this.props
-    console.log('Code change');
-    this.json.code = event.target.value
-    const base64 = Base64.encodeURI(JSON.stringify(this.json))
-    history.push(path.replace(':base64', base64))
+  componentDidMount () {
+    this.initCodeMirror()
   }
 
-  onMermaidConfigChange (event) {
-    const str = event.target.value
+  onMermaidConfigChange (str) {
     const { history, match: { path, url } } = this.props
     try {
       const config = JSON.parse(str)
@@ -48,6 +43,23 @@ class Edit extends React.Component {
     }
   }
 
+  initCodeMirror () {
+    this.codeMirror = new CodeMirror(document.getElementById('codemirror'), {
+      value: this.json.code
+    })
+    this.codeMirror.on('change', (cm) => {
+      const str = cm.getValue()
+      this.updateByCode(str)
+    })
+  }
+
+  updateByCode (code) {
+    const { history, match: { path } } = this.props
+    this.json.code = code
+    const base64 = Base64.encodeURI(JSON.stringify(this.json))
+    history.push(path.replace(':base64', base64))
+  }
+
   render () {
     const { match: { url } } = this.props
     return <div>
@@ -57,7 +69,7 @@ class Edit extends React.Component {
         <Col span={8}>
           <Affix>
             <Card title='Code'>
-              <Input.TextArea autosize={{ minRows: 4, maxRows: 16 }} value={this.json.code} onChange={this.onCodeChange} />
+              <div id='codemirror' />
             </Card>
           </Affix>
           <Card title='Mermaid configuration'>
